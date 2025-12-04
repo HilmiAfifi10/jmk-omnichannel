@@ -33,10 +33,9 @@ export default async function EditProductPage({
 				title={`Edit: ${product.name}`}
 				description="Perbarui informasi produk"
 				actions={
-					<Button variant="ghost" asChild>
+					<Button variant="ghost" asChild size="icon">
 						<Link href={`/dashboard/products/${product.id}`}>
-							<ArrowLeft className="mr-2 h-4 w-4" />
-							Kembali
+							<ArrowLeft />
 						</Link>
 					</Button>
 				}

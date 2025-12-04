@@ -44,10 +44,9 @@ export default async function ProductDetailPage({
 				description={product.sku ? `SKU: ${product.sku}` : undefined}
 				actions={
 					<div className="flex items-center gap-2">
-						<Button variant="ghost" asChild>
+						<Button variant="ghost" asChild size="icon">
 							<Link href="/dashboard/products">
-								<ArrowLeft className="mr-2 h-4 w-4" />
-								Kembali
+								<ArrowLeft />
 							</Link>
 						</Button>
 						<Button asChild>
