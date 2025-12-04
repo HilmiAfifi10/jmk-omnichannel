@@ -26,7 +26,7 @@ export async function signinUserWithCredential(
 		await signIn('credentials', {
 			email: validatedFields.data.email,
 			password: validatedFields.data.password,
-			redirectTo: '/',
+			redirectTo: '/dashboard',
 		});
 
 		return { success: true, message: 'Signed in successfully' };
