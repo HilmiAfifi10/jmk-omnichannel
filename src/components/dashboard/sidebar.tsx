@@ -125,48 +125,6 @@ export function DashboardSidebar() {
 							})}
 						</nav>
 					</ScrollArea>
-
-					{/* User menu */}
-					<div className="border-t p-4">
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" className="w-full justify-start gap-2">
-									<Avatar className="h-8 w-8">
-										<AvatarImage src={session?.user?.image || ''} />
-										<AvatarFallback>
-											{session?.user?.name?.charAt(0).toUpperCase() || 'U'}
-										</AvatarFallback>
-									</Avatar>
-									<div className="flex flex-col items-start text-left">
-										<span className="text-sm font-medium">
-											{session?.user?.name || 'User'}
-										</span>
-										<span className="text-xs text-muted-foreground">
-											{session?.user?.email}
-										</span>
-									</div>
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="w-56">
-								<DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem asChild>
-									<Link href="/dashboard/settings">
-										<Settings className="mr-2 h-4 w-4" />
-										Pengaturan
-									</Link>
-								</DropdownMenuItem>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem
-									className="text-destructive focus:text-destructive"
-									onClick={() => signOut({ callbackUrl: '/sign-in' })}
-								>
-									<LogOut className="mr-2 h-4 w-4" />
-									Keluar
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</div>
 				</div>
 			</aside>
 		</>
