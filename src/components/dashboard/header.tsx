@@ -1,6 +1,6 @@
 'use client';
 
-import { LogOut, Search, Settings } from 'lucide-react';
+import { ArrowLeft, LogOut, Search, Settings } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 
@@ -19,6 +19,7 @@ import {
 interface DashboardHeaderProps {
 	title: string;
 	description?: string;
+	backUrl?: string;
 	actions?: React.ReactNode;
 }
 
@@ -26,14 +27,20 @@ export function DashboardHeader({
 	title,
 	description,
 	actions,
+	backUrl,
 }: DashboardHeaderProps) {
 	const { data: session } = useSession();
 
 	return (
 		<header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-6 backdrop-blur supports-backdrop-filter:bg-background/60">
-			<div className="flex items-center gap-4">
-				{/* Custom actions */}
-				{actions}
+			<div className="flex items-center gap-2">
+				{backUrl && (
+					<Button variant="ghost" asChild size="icon">
+						<Link href={backUrl}>
+							<ArrowLeft />
+						</Link>
+					</Button>
+				)}
 
 				<div className="flex items-center gap-4">
 					<div>
@@ -53,6 +60,9 @@ export function DashboardHeader({
 						<Input type="search" placeholder="Cari..." className="w-64 pl-8" />
 					</div>
 				</div>
+
+				{/* Custom actions */}
+				{actions}
 
 				{/* User Dropdown */}
 				<DropdownMenu>

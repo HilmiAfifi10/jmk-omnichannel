@@ -15,13 +15,7 @@ export default async function NewProductPage() {
 			<DashboardHeader
 				title="Tambah Produk Baru"
 				description="Tambahkan produk baru ke katalog Anda"
-				actions={
-					<Button variant="ghost" asChild size="icon">
-						<Link href="/dashboard/products">
-							<ArrowLeft />
-						</Link>
-					</Button>
-				}
+				backUrl="/dashboard/products"
 			/>
 
 			<div className="mx-auto max-w-3xl p-6">
