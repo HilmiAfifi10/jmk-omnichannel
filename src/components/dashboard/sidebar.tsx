@@ -8,26 +8,24 @@ import {
 	FolderTree,
 	BarChart3,
 	Settings,
-	LogOut,
 	Menu,
 	X,
 	Store,
 } from 'lucide-react';
 import { useState } from 'react';
-import { signOut, useSession } from 'next-auth/react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+// import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+// import {
+// 	DropdownMenu,
+// 	DropdownMenuContent,
+// 	DropdownMenuItem,
+// 	DropdownMenuLabel,
+// 	DropdownMenuSeparator,
+// 	DropdownMenuTrigger,
+// } from '@/components/ui/dropdown-menu';
 
 const navigation = [
 	{
@@ -59,7 +57,6 @@ const navigation = [
 
 export function DashboardSidebar() {
 	const pathname = usePathname();
-	const { data: session } = useSession();
 	const [isOpen, setIsOpen] = useState(false);
 
 	return (

@@ -111,7 +111,7 @@ export default async function ProductDetailPage({
 									<p className="text-sm font-medium text-muted-foreground">
 										Kategori
 									</p>
-									<p className="text-lg">
+									<div className="text-lg">
 										{product.category ? (
 											<Badge variant="outline">{product.category.name}</Badge>
 										) : (
@@ -119,7 +119,7 @@ export default async function ProductDetailPage({
 												Tanpa Kategori
 											</span>
 										)}
-									</p>
+									</div>
 								</div>
 								<div>
 									<p className="text-sm font-medium text-muted-foreground">

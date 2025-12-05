@@ -1,7 +1,3 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
 import { DashboardHeader } from '@/components/dashboard/header';
 import { ProductForm } from '../_components/product-form';
 import { getAllCategories } from '../../categories/actions';
