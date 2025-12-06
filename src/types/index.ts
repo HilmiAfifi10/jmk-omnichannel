@@ -120,7 +120,8 @@ export interface ProductVariant {
 	id: string;
 	name: string;
 	sku?: string | null;
-	barcode?: string | null;
+	gtin?: string | null;
+	barcodeImage?: string | null;
 	price: number;
 	costPrice?: number | null;
 	stock: number;
@@ -135,8 +136,6 @@ export interface Product {
 	name: string;
 	slug: string;
 	description?: string | null;
-	sku?: string | null;
-	barcode?: string | null;
 	storeId: string;
 	categoryId?: string | null;
 	status: ProductStatus;
@@ -151,8 +150,6 @@ export interface CreateProductInput {
 	name: string;
 	slug: string;
 	description?: string;
-	sku?: string;
-	barcode?: string;
 	storeId: string;
 	categoryId?: string;
 	status?: ProductStatus;
@@ -162,8 +159,6 @@ export interface UpdateProductInput {
 	name?: string;
 	slug?: string;
 	description?: string;
-	sku?: string;
-	barcode?: string;
 	categoryId?: string | null;
 	status?: ProductStatus;
 }
@@ -171,7 +166,8 @@ export interface UpdateProductInput {
 export interface CreateProductVariantInput {
 	name: string;
 	sku?: string;
-	barcode?: string;
+	gtin?: string;
+	barcodeImage?: string;
 	price: number;
 	costPrice?: number;
 	stock?: number;
@@ -182,7 +178,8 @@ export interface CreateProductVariantInput {
 export interface UpdateProductVariantInput {
 	name?: string;
 	sku?: string;
-	barcode?: string;
+	gtin?: string;
+	barcodeImage?: string;
 	price?: number;
 	costPrice?: number;
 	stock?: number;

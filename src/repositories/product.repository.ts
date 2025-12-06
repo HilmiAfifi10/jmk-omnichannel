@@ -85,7 +85,6 @@ export const productRepository = {
 			where.OR = [
 				{ name: { contains: params.search, mode: 'insensitive' } },
 				{ description: { contains: params.search, mode: 'insensitive' } },
-				{ sku: { contains: params.search, mode: 'insensitive' } },
 			];
 		}
 

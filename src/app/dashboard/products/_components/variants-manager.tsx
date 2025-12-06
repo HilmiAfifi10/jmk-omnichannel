@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -64,7 +65,9 @@ export function VariantsManager({ productId, variants: initialVariants }: Varian
 	// Form state
 	const [name, setName] = useState('');
 	const [sku, setSku] = useState('');
-	const [barcode, setBarcode] = useState('');
+	const [gtin, setGtin] = useState('');
+	const [barcodeImage, setBarcodeImage] = useState('');
+	const [barcodeFile, setBarcodeFile] = useState<File | null>(null);
 	const [price, setPrice] = useState('');
 	const [costPrice, setCostPrice] = useState('');
 	const [stock, setStock] = useState('');
@@ -73,7 +76,9 @@ export function VariantsManager({ productId, variants: initialVariants }: Varian
 	const resetForm = () => {
 		setName('');
 		setSku('');
-		setBarcode('');
+		setGtin('');
+		setBarcodeImage('');
+		setBarcodeFile(null);
 		setPrice('');
 		setCostPrice('');
 		setStock('');
@@ -91,7 +96,9 @@ export function VariantsManager({ productId, variants: initialVariants }: Varian
 		setEditingVariant(variant);
 		setName(variant.name);
 		setSku(variant.sku || '');
-		setBarcode(variant.barcode || '');
+		setGtin(variant.gtin || '');
+		setBarcodeImage(variant.barcodeImage || '');
+		setBarcodeFile(null);
 		setPrice(variant.price.toString());
 		setCostPrice(variant.costPrice?.toString() || '');
 		setStock(variant.stock.toString());
@@ -104,11 +111,30 @@ export function VariantsManager({ productId, variants: initialVariants }: Varian
 		e.preventDefault();
 		setErrors({});
 
+		// Upload barcode image if file selected
+		let uploadedBarcodeUrl = barcodeImage;
+		if (barcodeFile) {
+			try {
+				const { uploadBarcodeImage } = await import('@/lib/supabase');
+				const result = await uploadBarcodeImage(barcodeFile);
+				if (result.success && result.url) {
+					uploadedBarcodeUrl = result.url;
+				} else {
+					toast.error('Gagal upload barcode image: ' + result.error);
+					return;
+				}
+			} catch (error) {
+				toast.error('Gagal upload barcode image');
+				return;
+			}
+		}
+
 		const formData = new FormData();
 		formData.append('productId', productId);
 		formData.append('name', name);
 		formData.append('sku', sku);
-		formData.append('barcode', barcode);
+		formData.append('gtin', gtin);
+		formData.append('barcodeImage', uploadedBarcodeUrl);
 		formData.append('price', price);
 		formData.append('costPrice', costPrice);
 		formData.append('stock', stock);
@@ -164,16 +190,17 @@ export function VariantsManager({ productId, variants: initialVariants }: Varian
 				<CardContent>
 					{variants.length > 0 ? (
 						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Nama Varian</TableHead>
-									<TableHead>SKU</TableHead>
-									<TableHead className="text-right">Harga</TableHead>
-									<TableHead className="text-right">Modal</TableHead>
-									<TableHead className="text-center">Stok</TableHead>
-									<TableHead className="w-[100px]"></TableHead>
-								</TableRow>
-							</TableHeader>
+						<TableHeader>
+							<TableRow>
+								<TableHead>Nama Varian</TableHead>
+								<TableHead>SKU</TableHead>
+								<TableHead>GTIN</TableHead>
+								<TableHead className="text-right">Harga</TableHead>
+								<TableHead className="text-right">Modal</TableHead>
+								<TableHead className="text-center">Stok</TableHead>
+								<TableHead className="w-[100px]"></TableHead>
+							</TableRow>
+						</TableHeader>
 							<TableBody>
 								{variants.map((variant) => (
 									<TableRow key={variant.id}>
@@ -182,6 +209,15 @@ export function VariantsManager({ productId, variants: initialVariants }: Varian
 											{variant.sku ? (
 												<code className="rounded bg-muted px-2 py-1 text-sm">
 													{variant.sku}
+												</code>
+											) : (
+												<span className="text-muted-foreground">-</span>
+											)}
+										</TableCell>
+										<TableCell>
+											{variant.gtin ? (
+												<code className="rounded bg-muted px-2 py-1 text-sm">
+													{variant.gtin}
 												</code>
 											) : (
 												<span className="text-muted-foreground">-</span>
@@ -269,15 +305,74 @@ export function VariantsManager({ productId, variants: initialVariants }: Varian
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="variantBarcode">Barcode</Label>
+								<Label htmlFor="variantGtin">GTIN (EAN/UPC)</Label>
 								<Input
-									id="variantBarcode"
-									value={barcode}
-									onChange={(e) => setBarcode(e.target.value)}
-									placeholder="Barcode varian"
+									id="variantGtin"
+									value={gtin}
+									onChange={(e) => setGtin(e.target.value)}
+									placeholder="Contoh: 1234567890123"
+									maxLength={14}
 									disabled={isPending}
 								/>
+								<p className="text-xs text-muted-foreground">
+									Global Trade Item Number (max 14 digit)
+								</p>
 							</div>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="variantBarcodeImage">Barcode Image</Label>
+							{barcodeImage && !barcodeFile && (
+								<div className="relative w-full h-32 border rounded-md overflow-hidden">
+									<Image
+										src={barcodeImage}
+										alt="Barcode"
+										fill
+										className="object-contain"
+									/>
+									<Button
+										type="button"
+										variant="destructive"
+										size="icon"
+										className="absolute top-2 right-2"
+										onClick={() => setBarcodeImage('')}
+									>
+										<X className="h-4 w-4" />
+									</Button>
+								</div>
+							)}
+							{barcodeFile && (
+								<div className="relative w-full h-32 border rounded-md overflow-hidden bg-muted">
+									<div className="absolute inset-0 flex items-center justify-center">
+										<p className="text-sm text-muted-foreground">{barcodeFile.name}</p>
+									</div>
+									<Button
+										type="button"
+										variant="destructive"
+										size="icon"
+										className="absolute top-2 right-2"
+										onClick={() => setBarcodeFile(null)}
+									>
+										<X className="h-4 w-4" />
+									</Button>
+								</div>
+							)}
+							<Input
+								id="variantBarcodeImage"
+								type="file"
+								accept="image/*"
+								onChange={(e) => {
+									const file = e.target.files?.[0];
+									if (file) {
+										setBarcodeFile(file);
+										setBarcodeImage('');
+									}
+								}}
+								disabled={isPending}
+							/>
+							<p className="text-xs text-muted-foreground">
+								Upload gambar barcode untuk variant ini
+							</p>
 						</div>
 
 						<div className="grid gap-4 sm:grid-cols-2">

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProductStatus } from '@/types';
 import { VariantsManager } from '../_components/variants-manager';
+import { ImagesManager } from '../_components/images-manager';
 import { getProductById } from '../actions';
 
 const statusLabels: Record<ProductStatus, string> = {
@@ -44,7 +45,7 @@ export default async function ProductDetailPage({
 		<div className="min-h-screen">
 			<DashboardHeader
 				title={product.name}
-				description={product.sku ? `SKU: ${product.sku}` : undefined}
+				description={product.slug}
 				backUrl="/dashboard/products"
 				actions={
 					<Button asChild>
@@ -59,38 +60,8 @@ export default async function ProductDetailPage({
 			<div className="space-y-6 p-6">
 				{/* Product Info */}
 				<div className="grid gap-6 lg:grid-cols-3">
-					{/* Images */}
-					<Card>
-						<CardHeader>
-							<CardTitle>Gambar Produk</CardTitle>
-						</CardHeader>
-						<CardContent>
-							{product.images && product.images.length > 0 ? (
-								<div className="grid gap-2">
-									{product.images.map((image) => (
-										<div
-											key={image.id}
-											className="relative aspect-square overflow-hidden rounded-lg bg-muted"
-										>
-											<Image
-												src={image.url}
-												alt={image.alt || product.name}
-												fill
-												className="object-cover"
-											/>
-										</div>
-									))}
-								</div>
-							) : (
-								<div className="flex aspect-square items-center justify-center rounded-lg bg-muted">
-									<Package className="h-16 w-16 text-muted-foreground" />
-								</div>
-							)}
-						</CardContent>
-					</Card>
-
 					{/* Details */}
-					<Card className="lg:col-span-2">
+					<Card className="lg:col-span-3">
 						<CardHeader>
 							<div className="flex items-center justify-between">
 								<CardTitle>Detail Produk</CardTitle>
@@ -100,7 +71,7 @@ export default async function ProductDetailPage({
 							</div>
 						</CardHeader>
 						<CardContent className="space-y-4">
-							<div className="grid gap-4 sm:grid-cols-2">
+							<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 								<div>
 									<p className="text-sm font-medium text-muted-foreground">
 										Nama Produk
@@ -109,9 +80,19 @@ export default async function ProductDetailPage({
 								</div>
 								<div>
 									<p className="text-sm font-medium text-muted-foreground">
+										Slug
+									</p>
+									<p>
+										<code className="rounded bg-muted px-2 py-1 text-sm">
+											{product.slug}
+										</code>
+									</p>
+								</div>
+								<div>
+									<p className="text-sm font-medium text-muted-foreground">
 										Kategori
 									</p>
-									<div className="text-lg">
+									<div>
 										{product.category ? (
 											<Badge variant="outline">{product.category.name}</Badge>
 										) : (
@@ -120,18 +101,6 @@ export default async function ProductDetailPage({
 											</span>
 										)}
 									</div>
-								</div>
-								<div>
-									<p className="text-sm font-medium text-muted-foreground">
-										SKU
-									</p>
-									<p>{product.sku || '-'}</p>
-								</div>
-								<div>
-									<p className="text-sm font-medium text-muted-foreground">
-										Barcode
-									</p>
-									<p>{product.barcode || '-'}</p>
 								</div>
 							</div>
 
@@ -148,6 +117,12 @@ export default async function ProductDetailPage({
 						</CardContent>
 					</Card>
 				</div>
+
+				{/* Images */}
+				<ImagesManager
+					productId={product.id}
+					images={product.images || []}
+				/>
 
 				{/* Variants */}
 				<VariantsManager

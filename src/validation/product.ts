@@ -6,8 +6,6 @@ export const createProductSchema = z.object({
 	name: z.string().min(2, 'Nama produk minimal 2 karakter').max(200, 'Nama produk maksimal 200 karakter'),
 	slug: z.string().min(2, 'Slug minimal 2 karakter').max(200, 'Slug maksimal 200 karakter').regex(/^[a-z0-9-]+$/, 'Slug hanya boleh huruf kecil, angka, dan strip'),
 	description: z.string().max(2000, 'Deskripsi maksimal 2000 karakter').optional(),
-	sku: z.string().max(100, 'SKU maksimal 100 karakter').optional(),
-	barcode: z.string().max(100, 'Barcode maksimal 100 karakter').optional(),
 	categoryId: z.string().optional().nullable(),
 	status: productStatusEnum.optional().default('DRAFT'),
 });
@@ -17,7 +15,8 @@ export const updateProductSchema = createProductSchema.partial();
 export const createProductVariantSchema = z.object({
 	name: z.string().min(1, 'Nama varian wajib diisi').max(100, 'Nama varian maksimal 100 karakter'),
 	sku: z.string().max(100, 'SKU maksimal 100 karakter').optional(),
-	barcode: z.string().max(100, 'Barcode maksimal 100 karakter').optional(),
+	gtin: z.string().max(14, 'GTIN maksimal 14 karakter').optional(),
+	barcodeImage: z.string().url('URL barcode image tidak valid').optional(),
 	price: z.number().min(0, 'Harga tidak boleh negatif'),
 	costPrice: z.number().min(0, 'Harga modal tidak boleh negatif').optional(),
 	stock: z.number().int().min(0, 'Stok tidak boleh negatif').optional().default(0),

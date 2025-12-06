@@ -115,8 +115,6 @@ model Product {
   name        String
   slug        String
   description String?
-  sku         String?
-  barcode     String?
   storeId     String         @map("store_id")
   categoryId  String?        @map("category_id")
   status      ProductStatus  @default(DRAFT)
@@ -149,15 +147,16 @@ model ProductImage {
 }
 
 model ProductVariant {
-  id        String   @id @default(cuid())
-  name      String   // e.g., "Red - Large", "Blue - Small"
-  sku       String?
-  barcode   String?
-  price     Decimal  @db.Decimal(12, 2)
-  costPrice Decimal? @db.Decimal(12, 2) @map("cost_price")
-  stock     Int      @default(0)
-  weight    Decimal? @db.Decimal(10, 2)
-  productId String   @map("product_id")
+  id           String   @id @default(cuid())
+  name         String   // e.g., "Red - Large", "Blue - Small"
+  sku          String?
+  gtin         String?  // Global Trade Item Number (EAN/UPC)
+  barcodeImage String?  @map("barcode_image") // URL to barcode image in Supabase
+  price        Decimal  @db.Decimal(12, 2)
+  costPrice    Decimal? @db.Decimal(12, 2) @map("cost_price")
+  stock        Int      @default(0)
+  weight       Decimal? @db.Decimal(10, 2)
+  productId    String   @map("product_id")
   
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   stockMovements StockMovement[]

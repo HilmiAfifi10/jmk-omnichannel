@@ -65,8 +65,6 @@ export async function createProduct(formData: FormData): Promise<ActionResult<Pr
 			name: formData.get('name') as string,
 			slug: formData.get('slug') as string,
 			description: formData.get('description') as string || undefined,
-			sku: formData.get('sku') as string || undefined,
-			barcode: formData.get('barcode') as string || undefined,
 			categoryId: formData.get('categoryId') as string || null,
 			status: (formData.get('status') as ProductStatus) || 'DRAFT',
 		};
@@ -125,8 +123,6 @@ export async function updateProduct(id: string, formData: FormData): Promise<Act
 			name: formData.get('name') as string || undefined,
 			slug: formData.get('slug') as string || undefined,
 			description: formData.get('description') as string || undefined,
-			sku: formData.get('sku') as string || undefined,
-			barcode: formData.get('barcode') as string || undefined,
 			categoryId: formData.get('categoryId') as string || null,
 			status: formData.get('status') as ProductStatus || undefined,
 		};
@@ -207,7 +203,8 @@ export async function createVariant(formData: FormData): Promise<ActionResult<Pr
 		const data = {
 			name: formData.get('name') as string,
 			sku: formData.get('sku') as string || undefined,
-			barcode: formData.get('barcode') as string || undefined,
+			gtin: formData.get('gtin') as string || undefined,
+			barcodeImage: formData.get('barcodeImage') as string || undefined,
 			price: parseFloat(formData.get('price') as string),
 			costPrice: formData.get('costPrice') ? parseFloat(formData.get('costPrice') as string) : undefined,
 			stock: formData.get('stock') ? parseInt(formData.get('stock') as string) : 0,
@@ -251,7 +248,8 @@ export async function updateVariant(id: string, formData: FormData): Promise<Act
 		const data = {
 			name: formData.get('name') as string || undefined,
 			sku: formData.get('sku') as string || undefined,
-			barcode: formData.get('barcode') as string || undefined,
+			gtin: formData.get('gtin') as string || undefined,
+			barcodeImage: formData.get('barcodeImage') as string || undefined,
 			price: formData.get('price') ? parseFloat(formData.get('price') as string) : undefined,
 			costPrice: formData.get('costPrice') ? parseFloat(formData.get('costPrice') as string) : undefined,
 			weight: formData.get('weight') ? parseFloat(formData.get('weight') as string) : undefined,
@@ -299,6 +297,32 @@ export async function deleteVariant(id: string): Promise<ActionResult> {
 }
 
 // Image Actions
+export async function uploadProductImages(files: File[]): Promise<ActionResult<string[]>> {
+	try {
+		const session = await auth();
+		if (!session?.user?.id) {
+			return { success: false, error: 'Unauthorized' };
+		}
+
+		const { uploadProductImage } = await import('@/lib/supabase');
+		const uploadedUrls: string[] = [];
+
+		for (const file of files) {
+			const result = await uploadProductImage(file);
+			if (result.success && result.url) {
+				uploadedUrls.push(result.url);
+			} else {
+				return { success: false, error: `Gagal upload ${file.name}: ${result.error}` };
+			}
+		}
+
+		return { success: true, data: uploadedUrls };
+	} catch (error) {
+		console.error('Error uploading images:', error);
+		return { success: false, error: 'Gagal upload gambar' };
+	}
+}
+
 export async function createProductImage(formData: FormData): Promise<ActionResult> {
 	try {
 		const session = await auth();

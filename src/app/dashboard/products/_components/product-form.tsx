@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import Image from 'next/image';
+import { X, Upload } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,10 +36,10 @@ export function ProductForm({ product, categories }: ProductFormProps) {
 	const [name, setName] = useState(product?.name || '');
 	const [slug, setSlug] = useState(product?.slug || '');
 	const [description, setDescription] = useState(product?.description || '');
-	const [sku, setSku] = useState(product?.sku || '');
-	const [barcode, setBarcode] = useState(product?.barcode || '');
 	const [categoryId, setCategoryId] = useState(product?.categoryId || '');
 	const [status, setStatus] = useState<ProductStatus>(product?.status || 'DRAFT');
+	const [imageFiles, setImageFiles] = useState<File[]>([]);
+	const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
 	const isEditing = !!product;
 
@@ -48,6 +50,34 @@ export function ProductForm({ product, categories }: ProductFormProps) {
 		}
 	};
 
+	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const files = Array.from(e.target.files || []);
+		if (files.length === 0) return;
+
+		// Validate file types
+		const validFiles = files.filter(file => file.type.startsWith('image/'));
+		if (validFiles.length !== files.length) {
+			toast.error('Beberapa file bukan gambar dan diabaikan');
+		}
+
+		// Add to existing files
+		setImageFiles(prev => [...prev, ...validFiles]);
+
+		// Create previews
+		validFiles.forEach(file => {
+			const reader = new FileReader();
+			reader.onloadend = () => {
+				setImagePreviews(prev => [...prev, reader.result as string]);
+			};
+			reader.readAsDataURL(file);
+		});
+	};
+
+	const removeImage = (index: number) => {
+		setImageFiles(prev => prev.filter((_, i) => i !== index));
+		setImagePreviews(prev => prev.filter((_, i) => i !== index));
+	};
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setErrors({});
@@ -56,22 +86,46 @@ export function ProductForm({ product, categories }: ProductFormProps) {
 		formData.append('name', name);
 		formData.append('slug', slug);
 		formData.append('description', description);
-		formData.append('sku', sku);
-		formData.append('barcode', barcode);
 		if (categoryId && categoryId !== 'none') {
 			formData.append('categoryId', categoryId);
 		}
 		formData.append('status', status);
 
 		startTransition(async () => {
+			// Upload images first if any
+			let imageUrls: string[] = [];
+			if (imageFiles.length > 0) {
+				const { uploadProductImages } = await import('../actions');
+				const uploadResult = await uploadProductImages(imageFiles);
+				if (!uploadResult.success) {
+					toast.error(uploadResult.error || 'Gagal upload gambar');
+					return;
+				}
+				imageUrls = uploadResult.data || [];
+			}
+
 			const result = isEditing
 				? await updateProduct(product.id, formData)
 				: await createProduct(formData);
 
 			if (result.success) {
+				// Save images to product if any
+				if (imageUrls.length > 0 && result.data) {
+					const { createProductImage } = await import('../actions');
+					for (let i = 0; i < imageUrls.length; i++) {
+						const imageFormData = new FormData();
+						imageFormData.append('productId', result.data.id);
+						imageFormData.append('url', imageUrls[i]);
+						imageFormData.append('position', i.toString());
+						await createProductImage(imageFormData);
+					}
+				}
+
 				toast.success(isEditing ? 'Produk berhasil diupdate' : 'Produk berhasil dibuat');
 				if (!isEditing && result.data) {
 					router.push(`/dashboard/products/${result.data.id}`);
+				} else if (isEditing) {
+					router.push(`/dashboard/products/${product.id}`);
 				}
 			} else {
 				if (result.errors) {
@@ -133,43 +187,67 @@ export function ProductForm({ product, categories }: ProductFormProps) {
 							rows={4}
 						/>
 						{errors.description && (
-							<p className="text-sm text-destructive">{errors.description[0]}</p>
+					<p className="text-sm text-destructive">{errors.description[0]}</p>
+				)}
+			</div>
+
+					<div className="space-y-2">
+						<Label htmlFor="images">Gambar Produk</Label>
+						
+						{/* Image Previews */}
+						{imagePreviews.length > 0 && (
+							<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+								{imagePreviews.map((preview, index) => (
+									<div key={index} className="relative aspect-square rounded-lg border overflow-hidden group">
+										<Image
+											src={preview}
+											alt={`Preview ${index + 1}`}
+											fill
+											className="object-cover"
+										/>
+										<Button
+											type="button"
+											variant="destructive"
+											size="icon"
+											className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+											onClick={() => removeImage(index)}
+											disabled={isPending}
+										>
+											<X className="h-4 w-4" />
+										</Button>
+									</div>
+								))}
+							</div>
 						)}
-					</div>
 
-					<div className="grid gap-4 sm:grid-cols-2">
-						<div className="space-y-2">
-							<Label htmlFor="sku">SKU</Label>
+						{/* Upload Input */}
+						<div className="flex items-center gap-2">
 							<Input
-								id="sku"
-								value={sku}
-								onChange={(e) => setSku(e.target.value)}
-								placeholder="Contoh: IP15PM-256-BLK"
+								id="images"
+								type="file"
+								accept="image/*"
+								multiple
+								onChange={handleImageChange}
 								disabled={isPending}
+								className="hidden"
 							/>
-							{errors.sku && (
-								<p className="text-sm text-destructive">{errors.sku[0]}</p>
-							)}
+							<Label
+								htmlFor="images"
+								className="flex items-center gap-2 px-4 py-2 border rounded-md cursor-pointer hover:bg-accent transition-colors"
+							>
+								<Upload className="h-4 w-4" />
+								<span>Upload Gambar</span>
+							</Label>
+							<p className="text-sm text-muted-foreground">
+								{imageFiles.length > 0 ? `${imageFiles.length} gambar dipilih` : 'Pilih beberapa gambar'}
+							</p>
 						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="barcode">Barcode</Label>
-							<Input
-								id="barcode"
-								value={barcode}
-								onChange={(e) => setBarcode(e.target.value)}
-								placeholder="Contoh: 1234567890123"
-								disabled={isPending}
-							/>
-							{errors.barcode && (
-								<p className="text-sm text-destructive">{errors.barcode[0]}</p>
-							)}
-						</div>
+						<p className="text-xs text-muted-foreground">
+							Upload gambar produk (mendukung multiple upload)
+						</p>
 					</div>
-				</CardContent>
-			</Card>
-
-			<Card>
+			</CardContent>
+		</Card>			<Card>
 				<CardHeader>
 					<CardTitle>Organisasi</CardTitle>
 					<CardDescription>
