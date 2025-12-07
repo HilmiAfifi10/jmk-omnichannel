@@ -1,0 +1,8 @@
+# requirements.txt
+fastapi
+uvicorn
+supabase
+openai
+langgraph
+pydantic-settings
+asyncio
