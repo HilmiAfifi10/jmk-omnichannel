@@ -246,11 +246,11 @@ export function ProductsTable({ initialData, categories }: ProductsTableProps) {
 									<TableCell>
 										<div>
 											<p className="font-medium">{product.name}</p>
-											{product.sku && (
+											{/* {product.sku && (
 												<p className="text-sm text-muted-foreground">
 													SKU: {product.sku}
 												</p>
-											)}
+											)} */}
 										</div>
 									</TableCell>
 									<TableCell>
