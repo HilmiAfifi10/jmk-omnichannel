@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
-import { storeRepository } from '@/repositories/store.repository';
+import { storeRepository, tiktokRepository } from '@/repositories';
 import { updateStoreSchema } from '@/validation/store';
 import { ActionResult, Store } from '@/types';
 
@@ -66,5 +66,51 @@ export async function updateStore(formData: FormData): Promise<ActionResult<Stor
 	} catch (error) {
 		console.error('Error updating store:', error);
 		return { success: false, error: 'Gagal memperbarui toko' };
+	}
+}
+
+export async function getTikTokIntegration() {
+	try {
+		const session = await auth();
+		if (!session?.user?.id) {
+			return { success: false, error: 'Unauthorized' };
+		}
+
+		const store = await storeRepository.findByUserId(session.user.id);
+		if (!store) {
+			return { success: true, data: null };
+		}
+
+		const integration = await tiktokRepository.findByStoreId(store.id);
+		return { success: true, data: integration };
+	} catch (error) {
+		console.error('Error getting TikTok integration:', error);
+		return { success: false, error: 'Gagal memuat integrasi TikTok' };
+	}
+}
+
+export async function disconnectTikTok(): Promise<ActionResult> {
+	try {
+		const session = await auth();
+		if (!session?.user?.id) {
+			return { success: false, error: 'Unauthorized' };
+		}
+
+		const store = await storeRepository.findByUserId(session.user.id);
+		if (!store) {
+			return { success: false, error: 'Store not found' };
+		}
+
+		const integration = await tiktokRepository.findByStoreId(store.id);
+		if (!integration) {
+			return { success: true };
+		}
+
+		await tiktokRepository.deleteByStoreId(store.id);
+		revalidatePath('/dashboard/settings');
+		return { success: true };
+	} catch (error) {
+		console.error('Error disconnecting TikTok:', error);
+		return { success: false, error: 'Gagal memutuskan TikTok' };
 	}
 }
