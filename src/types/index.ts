@@ -126,6 +126,7 @@ export interface ProductVariant {
 	costPrice?: number | null;
 	stock: number;
 	weight?: number | null;
+	tiktokId?: string | null;
 	productId: string;
 	createdAt: Date;
 	updatedAt: Date;
@@ -139,6 +140,7 @@ export interface Product {
 	storeId: string;
 	categoryId?: string | null;
 	status: ProductStatus;
+	 tiktokId?: string | null;
 	category?: Category | null;
 	images?: ProductImage[];
 	variants?: ProductVariant[];
@@ -184,6 +186,20 @@ export interface UpdateProductVariantInput {
 	costPrice?: number;
 	stock?: number;
 	weight?: number;
+}
+
+// ==================== TIKTOK TYPES ====================
+
+export interface TikTokIntegration {
+	 id: string;
+	 storeId: string;
+	 shopId: string;
+	 accessToken: string;
+	 refreshToken: string;
+	 accessTokenExpiry: Date;
+	 scopes?: string | null;
+	 createdAt: Date;
+	 updatedAt: Date;
 }
 
 export interface CreateProductImageInput {

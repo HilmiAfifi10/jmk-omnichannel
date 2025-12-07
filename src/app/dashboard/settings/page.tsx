@@ -1,14 +1,18 @@
 import { redirect } from 'next/navigation';
 import { AlertCircle } from 'lucide-react';
 import { DashboardHeader } from '@/components/dashboard/header';
-import { getStore } from './actions';
+import { getStore, getTikTokIntegration } from './actions';
 import { StoreForm } from './_components/store-form';
 import { EmptyState } from '@/components/ui/empty-state';
+import { TikTokConnectCard } from './_components/tiktok-connect-card';
 
 export default async function SettingsPage() {
-	const result = await getStore();
+	const [storeResult, integrationResult] = await Promise.all([
+		getStore(),
+		getTikTokIntegration(),
+	]);
 
-	if (!result.success) {
+	if (!storeResult.success) {
 		return (
 			<div className="min-h-screen">
 				<DashboardHeader
@@ -19,14 +23,14 @@ export default async function SettingsPage() {
 					<EmptyState
 						icon={AlertCircle}
 						title="Terjadi Kesalahan"
-						description={result.error || 'Gagal memuat data'}
+						description={storeResult.error || 'Gagal memuat data'}
 					/>
 				</div>
 			</div>
 		);
 	}
 
-	if (!result.data) {
+	if (!storeResult.data) {
 		redirect('/dashboard');
 	}
 
@@ -37,8 +41,11 @@ export default async function SettingsPage() {
 				description="Kelola pengaturan toko Anda"
 			/>
 
-			<div className="p-6 max-w-3xl">
-				<StoreForm store={result.data} />
+			<div className="p-6 flex flex-col gap-6 max-w-4xl">
+				<StoreForm store={storeResult.data} />
+				<TikTokConnectCard
+					integration={integrationResult?.success && integrationResult.data ? integrationResult.data : null}
+				/>
 			</div>
 		</div>
 	);

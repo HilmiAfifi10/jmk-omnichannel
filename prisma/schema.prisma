@@ -79,9 +79,10 @@ model Store {
   email       String?
   address     String?
   userId      String     @map("user_id")
-  
+
   products    Product[]
   categories  Category[]
+  tiktok      TikTokIntegration?
   
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @updatedAt @map("updated_at")
@@ -118,6 +119,7 @@ model Product {
   storeId     String         @map("store_id")
   categoryId  String?        @map("category_id")
   status      ProductStatus  @default(DRAFT)
+  tiktokId    String?        @map("tiktok_id")
   
   store       Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
   category    Category?      @relation(fields: [categoryId], references: [id])
@@ -157,6 +159,7 @@ model ProductVariant {
   stock        Int      @default(0)
   weight       Decimal? @db.Decimal(10, 2)
   productId    String   @map("product_id")
+  tiktokId     String?  @map("tiktok_id")
   
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   stockMovements StockMovement[]
@@ -165,6 +168,23 @@ model ProductVariant {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("product_variants")
+}
+
+model TikTokIntegration {
+  id                String   @id @default(cuid())
+  storeId           String   @unique @map("store_id")
+  shopId            String
+  accessToken       String   @map("access_token")
+  refreshToken      String   @map("refresh_token")
+  accessTokenExpiry DateTime @map("access_token_expiry")
+  scopes            String?
+
+  store    Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("tiktok_integrations")
 }
 
 model StockMovement {
